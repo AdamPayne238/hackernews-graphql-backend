@@ -1,44 +1,47 @@
+
 const { GraphQLServer } = require('graphql-yoga')
 
-// 2. The resolvers object is the actual implementation of the GraphQL schema. Notice how its structure is identical to the structure of the type definition inside typeDefs: Query.info.
+// yarn add prisma-client-lib
+// This dependency is required to make the auto-generated Prisma client work.
+// Now you can attach the generated prisma client instance to the context so that your resolvers get access to it.
+const { prisma } = require('./generated/prisma-client')
 
-// 2.2 The next step is to implement the resolver function for the feed query. In fact, one thing we haven’t mentioned yet is that not only root fields, but virtually all fields on the types in a GraphQL schema have resolver functions. So, you’ll add resolvers for the id, description and url fields of the Link type as well.
 
-// The links variable is used to store the links at runtime. For now, everything is stored only in-memory rather than being persisted in a database.
-let links = [{
-    id: 'link-0',
-    url: 'www.howtographql.com',
-    description: 'Fullstack turorial for GraphQL'
-}]
+// The context argument
+// Previously, the feed resolver didn’t take any arguments - now it receives four. In fact, the first two and the fourth are not needed for this particular resolver. But the third one, called context, is.
+// Remember how we said earlier that all GraphQL resolver functions always receive four arguments. Now you’re getting to know another one, so what is context used for?
+// The context argument is a plain JavaScript object that every resolver in the resolver chain can read from and write to - it thus basically is a means for resolvers to communicate. As you’ll see in a bit, it’s also possible to already write to it at the moment when the GraphQL server itself is being initialized. So, it’s also a way for you to pass arbitrary data or functions to the resolvers. In this case, you’re going to attach this prisma client instance to the context - more about that soon.
 
-// adding a new integer variable that simply serves as a way to generate unique IDs for newly created Link elements
-let idCount = links.length
+// Understanding the feed resolver
+//It accesses a prisma object on context. As you will see in a bit, this prisma object actually is a Prisma client instance that’s imported from the generated prisma-client library.
+// This Prisma client instance effectively lets you access your database through the Prisma API. It exposes a number of methods that let you perform CRUD operations for your models.
 
-// adding a new resolver for the feed root field. Notice that a resolver always has to be named after the corresponding field from the schema definition.
+// Understanding the post resolver
+// Similar to the feed resolver, you’re simply invoking a function on the prisma client instance which is attached to the context.
+// You’re sending the createLink method from the Prisma client API. As arguments, you’re passing the data that the resolvers receive via the args parameter.
+// So, to summarize, Prisma client exposes a CRUD API for the models in your datamodel for you to read and write in your database. These methods are auto-generated based on your model definitions in datamodel.prisma.
+
 const resolvers = {
-  Query: {
-    info: () => `This is the API of a Hackernews Clone`,
-    feed: () => links,
-  },
-  Mutation: {
-    // The implementation of the post resolver first creates a new link object, then adds it to the existing links list and finally returns the new link.
-      post: (parent, args) => {
-          const link = {
-              id: `link-${idCount++}`,
-              description: args.description,
-              url: args.url,
-          }
-          links.push(link)
-          return link
-    }
-  },
+    Query: {
+        info: () => `All your database are belong to us..`,
+        feed: (root, args, context, info) => {
+            return context.prisma.links()
+        },
+    },
+    Mutation: {
+        post: (root, args, context) => {
+            return context.prisma.createLink({
+                url: args.url,
+                description: args.description,
+            })
+        },
+    },
 }
 
-// 3. the schema and resolvers are bundled and passed to the GraphQLServer which is imported from graphql-yoga. This tells the server what API operations are accepted and how they should be resolved.
 const server = new GraphQLServer({
-  // migrated typeDefs schema to schema.graphql
   typeDefs: './src/schema.graphql',
   resolvers,
+  context: { prisma }, 
 })
 
 server.start(() => console.log(`Server is running on http://localhost:4000`))

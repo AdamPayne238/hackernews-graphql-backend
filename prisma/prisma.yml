@@ -9,3 +9,9 @@ datamodel: datamodel.prisma
 generate:
   - generator: javascript-client
     output: ../src/generated/prisma-client
+
+## Right now, it is a bit annoying that you need to explicitly run prisma generate every time you’re migrating your database with prisma deploy. To make that easier in the future, you can configure a post-deployment hook that gets invoked every time after you ran prisma deploy.
+hooks:
+  post-deploy:
+    - prisma generate
+# The Prisma client will now automatically be regenerated upon a datamodel change.
