@@ -6,6 +6,7 @@ const Mutation = require('./resolvers/Mutation')
 const User = require('./resolvers/User')
 const Link = require('./resolvers/Link')
 const Subscription = require('./resolvers/Subscription')
+const Vote = require('./resolvers/Vote')
 
 // yarn add prisma-client-lib
 // This dependency is required to make the auto-generated Prisma client work.
@@ -32,6 +33,7 @@ const resolvers = {
     Subscription,
     User,
     Link,
+    Vote,
 }
 
 const server = new GraphQLServer({
