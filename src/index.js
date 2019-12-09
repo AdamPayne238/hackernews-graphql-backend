@@ -1,11 +1,15 @@
 
 const { GraphQLServer } = require('graphql-yoga')
 
+const Query = require('./resolvers/Query')
+const Mutation = require('./resolvers/Mutation')
+const User = require('./resolvers/User')
+const Link = require('./resolvers/Link')
+
 // yarn add prisma-client-lib
 // This dependency is required to make the auto-generated Prisma client work.
 // Now you can attach the generated prisma client instance to the context so that your resolvers get access to it.
 const { prisma } = require('./generated/prisma-client')
-
 
 // The context argument
 // Previously, the feed resolver didn’t take any arguments - now it receives four. In fact, the first two and the fourth are not needed for this particular resolver. But the third one, called context, is.
@@ -22,26 +26,21 @@ const { prisma } = require('./generated/prisma-client')
 // So, to summarize, Prisma client exposes a CRUD API for the models in your datamodel for you to read and write in your database. These methods are auto-generated based on your model definitions in datamodel.prisma.
 
 const resolvers = {
-    Query: {
-        info: () => `All your database are belong to us..`,
-        feed: (root, args, context, info) => {
-            return context.prisma.links()
-        },
-    },
-    Mutation: {
-        post: (root, args, context) => {
-            return context.prisma.createLink({
-                url: args.url,
-                description: args.description,
-            })
-        },
-    },
+    Query,
+    Mutation,
+    User,
+    Link
 }
 
 const server = new GraphQLServer({
   typeDefs: './src/schema.graphql',
   resolvers,
-  context: { prisma }, 
+  context: request => {
+      return {
+          ...request,
+          prisma,
+    }
+  },
 })
 
 server.start(() => console.log(`Server is running on http://localhost:4000`))
