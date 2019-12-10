@@ -2,6 +2,25 @@
 
 ## Tutorial Link: https://www.howtographql.com/graphql-js/0-introduction/
 
+## CLI Commands
+ - node src/index.js => runs server
+ - prisma deploy => migrates tables
+ - prisma generate => generates files (similar to seed)
+
+# Dependencies
+ - bcryptjs
+ - graphql-yoga
+ - jsonwebtoken
+ - prisma-client-lib
+
+# Global
+ - yarn global add prisma => Install prisma as global dependency
+
+# devDependencies
+ - jest
+ - nodemon
+ - supertest
+
 ## Summary ##
 <!-- In this tutorial, you learned how to build a GraphQL server from scratch. The stack you used was based on Node.js, graphql-yoga and Prisma.
 
